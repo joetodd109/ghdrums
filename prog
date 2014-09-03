@@ -1,0 +1,4 @@
+#!/bin/bash
+
+osascript -e 'tell app "Terminal" to do script "openocd -f board/stm32f4discovery.cfg"'
+osascript -e 'tell app "Terminal" to do script "telnet localhost 4444"'
