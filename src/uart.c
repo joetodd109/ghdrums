@@ -22,14 +22,17 @@ typedef struct {
 /* Private variables ----------------------------------------------------------*/
 static uart_buf_t uart_buf;
 static uint32_t uart_recv_cnt;
+static uart_recv_callback_fn callback;
 
 /* Function Declarations ------------------------------------------------------*/
 extern void 
-uart_init(uint32_t baudrate)
+uart_init(uint32_t baudrate, uart_recv_callback_fn callback_fn)
 {
     uint32_t i;
     USART_InitTypeDef usart;
     NVIC_InitTypeDef nvic;
+
+    callback = callback_fn;
 
     uart_buf.tail = 0;
     uart_buf.head = 0;
@@ -114,10 +117,13 @@ uart_read_byte(void)
 
 void USART1_IRQHandler(void)
 {
+    uint8_t data;
+
     if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) {
-        uart_buf.data[uart_buf.head] = USART_ReceiveData(USART1);
+        data = USART_ReceiveData(USART1);
+        callback(data);
+
         USART1->SR &= ~USART_SR_RXNE;
-        uart_buf.head = (uart_buf.head + 1) % RX_BUFFER_SIZE;
         uart_recv_cnt++;
     }
 }
