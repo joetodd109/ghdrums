@@ -14,10 +14,8 @@
 #define IOX_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stdint.h"
 #include "stdbool.h"
 #include "stm32f4xx.h"
-#include "stm32f4xx_conf.h"
 
 
 /* Global Defines ----------------------------------------------------------- */
@@ -139,17 +137,6 @@ extern void iox_configure_pin(iox_port_t port, uint32_t pin,
  */
 extern void iox_alternate_func(iox_port_t port, uint32_t pin,
                                 uint32_t af);
-
-/**
- * Change an output pin state.
- */
-extern void (iox_set_pin_state) (iox_port_t port, uint32_t pin,
-                                 bool state);
-
-/**
- * Read the state of an input pin.
- */
-extern bool(iox_get_pin_state) (iox_port_t port, uint32_t pin);
 
 /* 
  * Sets up GPIO's for LED's

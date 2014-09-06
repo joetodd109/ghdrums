@@ -1,7 +1,13 @@
-#include "stm32f4xx_conf.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+/**
+ ******************************************************************************
+ * @file    timer.c
+ * @author  Joe Todd
+ * @version
+ * @date    January 2014
+ * @brief   MIDI
+ *
+  ******************************************************************************/
+
 #include "timer.h"
 #include "utl.h"
 

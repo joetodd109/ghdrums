@@ -14,10 +14,8 @@
 #define MIDI_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stdint.h"
 #include "stdbool.h"
 #include "stm32f4xx.h"
-#include "stm32f4xx_conf.h"
 
 /* Global Defines ----------------------------------------------------------- */
 

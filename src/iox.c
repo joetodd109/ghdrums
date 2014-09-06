@@ -106,30 +106,6 @@ iox_alternate_func(iox_port_t port, uint32_t pin,
     *afr = (*afr & ~mask) | (af << shift);
 }
 
-/**
- * Change an output pin state.
- *
- * Just call the macro defined in iox.h.
- */
-extern void
- (iox_set_pin_state) (iox_port_t port, uint32_t pin, bool state) {
-    if (state) {
-        iox_set_pin_state(port, pin);        
-    }
-    else {
-        iox_reset_pin_state(port, pin);
-    }
-}
-
-/**
- * Read the state of an input pin.
- *
- * Just call the macro defined in iox.h.
- */
-extern bool(iox_get_pin_state) (iox_port_t port, uint32_t pin) {
-    return iox_get_pin_state(port, pin);
-}
-
 /* 
  * Sets up GPIO's for LED's
  */

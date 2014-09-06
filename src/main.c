@@ -1,5 +1,4 @@
-#include "stm32f4xx.h"   
-#include "stm32f4xx_conf.h" 
+#include "stm32f4xx.h"
 #include <stdlib.h>
 
 #include "utl.h"
@@ -13,6 +12,8 @@
 
 #define TBUF_SIZE 32
 #define BUF_SIZE 3072
+
+static bool buffer_empty(void);
 
 #ifdef TESTING
 static bool light;
@@ -29,7 +30,7 @@ static uart_recv_callback_fn callback;
 int main(void) {
     SystemCoreClockUpdate();
     uint32_t i, tmp;
-    callback = uart_recv_callback;
+    callback = data_recv_callback;
 
     iox_led_init();
     timer_init();
@@ -64,20 +65,28 @@ int main(void) {
          * If full command received, send ON data and 
          * store timer.
          */
-        if (n == 3) {
-            tmp = tail;
-            midi_on(0, data[tmp + 1], data[tmp + 2]);
-            timer[headt] = timer_get() + 500000UL;
-            headt = (headt + 1) % TBUF_SIZE;
+        if (n >= 3) {
+            if (!buffer_empty()) {
+                tmp = tail;
+                midi_on(0, 
+                        data[(tmp + 1) % BUF_SIZE], 
+                        data[(tmp + 2) % BUF_SIZE]);
+                timer[headt] = timer_get() + 500000UL;
+                headt = (headt + 1) % TBUF_SIZE;
+            }
             n = 0;
         }
         /*
          * If time has passed, send OFF command. 
          */
         if (timer[tailt] > timer_get()) {
-            tmp = tail;
-            midi_off(0, data[tmp + 1], data[tmp + 2]);
-            tail = (tail + 3) % BUF_SIZE;
+            if (!buffer_empty()) {
+                tmp = tail;
+                midi_off(0, 
+                        data[(tmp + 1) % BUF_SIZE], 
+                        data[(tmp + 2) % BUF_SIZE]);
+                tail = (tail + MIDI_CMD_LEN) % BUF_SIZE;
+            }
             tailt = (tailt + 1) % TBUF_SIZE;
         }
 #endif
@@ -85,8 +94,14 @@ int main(void) {
     return 0;
 }
 
+static bool 
+buffer_empty(void)
+{
+    return (head == tail);
+}
+
 extern void
-uart_recv_callback(uint8_t byte)
+data_recv_callback(uint8_t byte)
 {
     /* Fill data buffer */
     data[head] = byte;

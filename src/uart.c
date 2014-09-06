@@ -12,6 +12,11 @@
 /* Includes -------------------------------------------------------------------*/
 #include "uart.h"
 
+#define USART1_TX_PIN   6   /* PB6 */
+#define USART1_RX_PIN   7   /* PB7 */
+
+#define USART1_AF       7   /* AF7 */
+
 /* Private typedefs -----------------------------------------------------------*/
 typedef struct {
     uint8_t data[RX_BUFFER_SIZE];
@@ -29,9 +34,9 @@ extern void
 uart_init(uint32_t baudrate, uart_recv_callback_fn callback_fn)
 {
     uint32_t i;
-    USART_InitTypeDef usart;
-    NVIC_InitTypeDef nvic;
-
+    uint32_t reg;
+    uint32_t fraction;
+    uint32_t mantissa;
     callback = callback_fn;
 
     uart_buf.tail = 0;
@@ -43,47 +48,37 @@ uart_init(uint32_t baudrate, uart_recv_callback_fn callback_fn)
     }
 
     /* Enable GPIO clock */
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 
     /* Enable UART clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
-
-    /* Connect PXx to USARTx_Tx*/
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_USART1);
-
-    /* Connect PXx to USARTx_Rx*/
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1);
+    /* Connect PXx to USARTx_Tx/Rx*/
+    iox_alternate_func(iox_port_b, USART1_TX_PIN, USART1_AF);
+    iox_alternate_func(iox_port_b, USART1_RX_PIN, USART1_AF);
 
     /* Configure USART Tx/Rx as alternate function  */
-    iox_configure_pin(iox_port_b, 6, iox_mode_af, iox_type_pp, 
+    iox_configure_pin(iox_port_b, USART1_TX_PIN, iox_mode_af, iox_type_pp, 
                         iox_speed_fast, iox_pupd_up);
-    iox_configure_pin(iox_port_b, 7, iox_mode_af, iox_type_pp,
+    iox_configure_pin(iox_port_b, USART1_RX_PIN, iox_mode_af, iox_type_pp,
                         iox_speed_fast, iox_pupd_up);
 
-    /* USART configuration */
-    usart.USART_BaudRate = baudrate;
-    usart.USART_WordLength = USART_WordLength_8b;
-    usart.USART_StopBits = USART_StopBits_1;
-    usart.USART_Parity = USART_Parity_No;
-    usart.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    /* 1 Stop bit, asynchronous mode */
+    USART1->CR2 = 0x00; 
+    /* Rx interrupt enabled, Tx/Rx enabled */
+    USART1->CR1 = (USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE);
+    /* No hardware flow control */
+    USART1->CR3 = 0x00;
+    /* Configure baudrate */
+    mantissa = ((25 * PCLK2) / (4 * baudrate));
+    reg = (mantissa / 100) << 4;
+    fraction = mantissa - (100 * (reg >> 4));
+    reg |= (((fraction * 16) + 50) / 100) & 0x0F;
+    USART1->BRR = reg;
 
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+    utl_enable_irq(USART1_IRQn);
 
-    /* Enable the USART1 Interrupt */
-    nvic.NVIC_IRQChannel = USART1_IRQn;
-    nvic.NVIC_IRQChannelPreemptionPriority = 0;
-    nvic.NVIC_IRQChannelSubPriority = 0;
-    nvic.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&nvic);
-
-    USART_Init(USART1, &usart);
-
-    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-
-    /* Enable USART */
-    USART_Cmd(USART1, ENABLE);
+    USART1->CR1 |= USART_CR1_UE;
 }
 
 extern void 
@@ -93,34 +88,19 @@ uart_send_data(unsigned char *buf, uint32_t len)
 
     for (i = 0; i < len; i++) {
         USART1->DR = buf[i];
-        while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+        while ((USART1->SR & USART_SR_TC) == 0);
     }
-}
-
-extern bool 
-uart_buffer_empty(void)
-{
-    return (uart_buf.head == uart_buf.tail);
-}
-
-extern uint8_t 
-uart_read_byte(void)
-{
-    uint8_t data = 0;
-
-    if (uart_buf.head != uart_buf.tail) {
-        data = uart_buf.data[uart_buf.tail];
-        uart_buf.tail = (uart_buf.tail + 1) % RX_BUFFER_SIZE;
-    }
-    return data;
 }
 
 void USART1_IRQHandler(void)
 {
     uint8_t data;
+    uint32_t sr;
 
-    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) {
-        data = USART_ReceiveData(USART1);
+    sr = USART1->SR;
+
+    if (sr & USART_SR_RXNE) {
+        data = USART1->DR;
         callback(data);
 
         USART1->SR &= ~USART_SR_RXNE;

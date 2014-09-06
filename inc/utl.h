@@ -3,7 +3,7 @@
 #define UTL_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_conf.h"
+#include "stm32f4xx.h"
 
 /**
  * Enable an interrupt.
