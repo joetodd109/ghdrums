@@ -5,7 +5,8 @@
 #include "iox.h"
 #include "uart.h"
 #include "timer.h"
-#include "midi.h"       
+#include "midi.h"
+#include "dma.h"     
 
 //#define TESTING
 #define GHDRUMS
@@ -35,6 +36,7 @@ int main(void) {
     iox_led_init();
     timer_init();
     uart_init(31250, callback);
+    dma_init();
 
     for (i = 0; i < TBUF_SIZE; i++) {
         timer[i] = 0;
@@ -101,10 +103,14 @@ buffer_empty(void)
 }
 
 extern void
-data_recv_callback(uint8_t byte)
+data_recv_callback(uint8_t *bytes)
 {
-    /* Fill data buffer */
-    data[head] = byte;
-    head = (head + 1) % BUF_SIZE;
-    n++;
+    uint32_t i;
+
+    for (i = 0; i < 3; i++) {
+        /* Fill data buffer */
+        data[head] = bytes[i];
+        head = (head + 1) % BUF_SIZE;
+        n++;
+    }
 }

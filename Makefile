@@ -1,6 +1,4 @@
-# put your *.o targets here, make should handle the rest!
-
-SRCS = main.c iox.c uart.c timer.c utl.c midi.c system_stm32f4xx.c
+SRCS = main.c iox.c uart.c timer.c utl.c midi.c dma.c system_stm32f4xx.c
 
 PROJ_NAME=midi
 
@@ -22,6 +20,7 @@ vpath %.c src
 ROOT=$(shell pwd)
 
 CFLAGS += -Iinc
+CFLAGS += -Iinc/core
 
 SRCS += src/startup_stm32f4xx.s 
 
