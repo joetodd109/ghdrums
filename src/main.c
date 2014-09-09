@@ -16,17 +16,13 @@
 
 static bool buffer_empty(void);
 
-#ifdef TESTING
 static bool light;
-#endif
-#ifdef GHDRUMS
 static uint8_t data[BUF_SIZE];
 static uint32_t timer[TBUF_SIZE];
 static uint32_t head, headt;
 static uint32_t tail, tailt;
 static uint32_t n;
 static uart_recv_callback_fn callback;
-#endif
 
 int main(void) {
     SystemCoreClockUpdate();
@@ -47,10 +43,8 @@ int main(void) {
     tailt = 0;
     n = 0;
 
-#ifdef TESTING
-    light = false;
-#endif
-    iox_led_on(true, false, false, true);
+    light = true;
+    iox_led_on(false, false, false, light);
 
     while (1) {
 #ifdef TESTING
@@ -75,6 +69,8 @@ int main(void) {
                         data[(tmp + 2) % BUF_SIZE]);
                 timer[headt] = timer_get() + 500000UL;
                 headt = (headt + 1) % TBUF_SIZE;
+                light = !light;
+                iox_led_on(false, false, false, light);
             }
             n = 0;
         }
@@ -103,14 +99,9 @@ buffer_empty(void)
 }
 
 extern void
-data_recv_callback(uint8_t *bytes)
+data_recv_callback(uint8_t bytes)
 {
-    uint32_t i;
-
-    for (i = 0; i < 3; i++) {
-        /* Fill data buffer */
-        data[head] = bytes[i];
-        head = (head + 1) % BUF_SIZE;
-        n++;
-    }
+    data[head] = bytes;
+    head = (head + 1) % BUF_SIZE;
+    n++;
 }

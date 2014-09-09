@@ -1,4 +1,19 @@
-#!/bin/bash
+#!/usr/bin/osascript
 
-osascript -e 'tell app "Terminal" to do script "openocd -f board/stm32f4discovery.cfg"'
-osascript -e 'tell app "Terminal" to do script "telnet localhost 4444"'
+tell application "Terminal"
+    activate
+    tell application "System Events" to keystroke "t" using command down
+    repeat while contents of selected tab of window 1 starts with linefeed
+        delay 0.01
+    end repeat
+    do script "openocd -f board/stm32f4discovery.cfg" in window 1
+end tell
+
+tell application "Terminal"
+    activate
+    tell application "System Events" to keystroke "t" using command down
+    repeat while contents of selected tab of window 1 starts with linefeed
+        delay 0.01
+    end repeat
+    do script "telnet localhost 4444" in window 1
+end tell

@@ -6,7 +6,7 @@ This project is for using the Guitar Hero Drum Kit as a MIDI controller. As the 
 Hardware
 --------
 
-- STM32F407 Discovery Board
+- STM32F4 Discovery Board
 - 2x 5pin DIN connectors
 - 6N138 Optoisolator 
 - 7404 Hex Inverter

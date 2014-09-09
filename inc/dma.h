@@ -52,5 +52,7 @@ extern void dma_init(void);
  */
 extern void dma_init_dma2_chx(uint32_t str, DMA_Stream_TypeDef const *cfg);
 
+extern void uart_configure_dma2(uint8_t * const src, uint16_t nbytes);
+
 
 #endif
