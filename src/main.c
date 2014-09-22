@@ -12,9 +12,10 @@
 #define GHDRUMS
 
 #define TBUF_SIZE 32
-#define BUF_SIZE 3072
+#define BUF_SIZE 300
 
 static bool buffer_empty(void);
+static bool tbuffer_empty(void);
 
 static bool light;
 static uint8_t data[BUF_SIZE];
@@ -26,7 +27,7 @@ static uart_recv_callback_fn callback;
 
 int main(void) {
     SystemCoreClockUpdate();
-    uint32_t i, tmp;
+    uint32_t i;
     callback = data_recv_callback;
 
     iox_led_init();
@@ -63,12 +64,11 @@ int main(void) {
          */
         if (n >= 3) {
             if (!buffer_empty()) {
-                tmp = tail;
                 midi_on(0, 
-                        data[(tmp + 1) % BUF_SIZE], 
-                        data[(tmp + 2) % BUF_SIZE]);
-                timer[headt] = timer_get() + 500000UL;
-                headt = (headt + 1) % TBUF_SIZE;
+                        data[(tail + 1)], 
+                        data[(tail + 2)]);
+                timer[headt++] = timer_get() + 500000UL;
+                headt %= TBUF_SIZE;
                 light = !light;
                 iox_led_on(false, false, false, light);
             }
@@ -77,15 +77,16 @@ int main(void) {
         /*
          * If time has passed, send OFF command. 
          */
-        if (timer[tailt] > timer_get()) {
-            if (!buffer_empty()) {
-                tmp = tail;
-                midi_off(0, 
-                        data[(tmp + 1) % BUF_SIZE], 
-                        data[(tmp + 2) % BUF_SIZE]);
-                tail = (tail + MIDI_CMD_LEN) % BUF_SIZE;
+        if (!tbuffer_empty()) {
+            if (timer[tailt++] > timer_get()) {
+                if (!buffer_empty()) {
+                    midi_off(0, 
+                            data[(tail + 1)], 
+                            data[(tail + 2)]);
+                    tail = (tail + MIDI_CMD_LEN) % BUF_SIZE;
+                }
+                tailt %= TBUF_SIZE;
             }
-            tailt = (tailt + 1) % TBUF_SIZE;
         }
 #endif
     }
@@ -98,10 +99,16 @@ buffer_empty(void)
     return (head == tail);
 }
 
+static bool
+tbuffer_empty(void)
+{
+    return (headt == tailt);
+}
+
 extern void
 data_recv_callback(uint8_t bytes)
 {
-    data[head] = bytes;
-    head = (head + 1) % BUF_SIZE;
+    data[head++] = bytes;
+    head %= BUF_SIZE;
     n++;
 }
