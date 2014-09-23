@@ -5,8 +5,7 @@
 #include "iox.h"
 #include "uart.h"
 #include "timer.h"
-#include "midi.h"
-#include "dma.h"     
+#include "midi.h"    
 
 //#define TESTING
 #define GHDRUMS
@@ -33,7 +32,6 @@ int main(void) {
     iox_led_init();
     timer_init();
     uart_init(31250, callback);
-    dma_init();
 
     for (i = 0; i < TBUF_SIZE; i++) {
         timer[i] = 0;
@@ -67,25 +65,25 @@ int main(void) {
                 midi_on(0, 
                         data[(tail + 1)], 
                         data[(tail + 2)]);
-                timer[headt++] = timer_get() + 500000UL;
+                timer[headt++] = timer_get() + 5;
                 headt %= TBUF_SIZE;
                 light = !light;
                 iox_led_on(false, false, false, light);
+                n -= 3;
             }
-            n = 0;
         }
         /*
          * If time has passed, send OFF command. 
          */
         if (!tbuffer_empty()) {
-            if (timer[tailt++] > timer_get()) {
+            if (timer[tailt] > timer_get()) {
                 if (!buffer_empty()) {
                     midi_off(0, 
                             data[(tail + 1)], 
                             data[(tail + 2)]);
                     tail = (tail + MIDI_CMD_LEN) % BUF_SIZE;
+                    tailt = (tailt + 1) % TBUF_SIZE;
                 }
-                tailt %= TBUF_SIZE;
             }
         }
 #endif

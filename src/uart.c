@@ -66,6 +66,7 @@ uart_init(uint32_t baudrate, uart_recv_callback_fn callback_fn)
     USART1->BRR = reg;
 
     utl_enable_irq(USART1_IRQn);
+
     USART1->CR1 |= USART_CR1_UE;
 }
 
@@ -82,14 +83,12 @@ uart_send_data(unsigned char *buf, uint32_t len)
 
 void USART1_IRQHandler(void)
 {
-    uint8_t data;
     uint32_t sr;
 
     sr = USART1->SR;
 
     if (sr & USART_SR_RXNE) {
-        data = USART1->DR;
-        callback(data);
+        callback(USART1->DR);
 
         USART1->SR &= ~USART_SR_RXNE;
         uart_recv_cnt++;

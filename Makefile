@@ -1,4 +1,4 @@
-SRCS = main.c iox.c uart.c timer.c utl.c midi.c dma.c system_stm32f4xx.c
+SRCS = main.c iox.c uart.c timer.c utl.c midi.c system_stm32f4xx.c
 
 PROJ_NAME=midi
 

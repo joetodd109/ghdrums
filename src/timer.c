@@ -11,18 +11,18 @@
 #include "timer.h"
 #include "utl.h"
 
-static volatile uint32_t ms_count = 0;
+static volatile uint32_t count = 0;
 
 /* 
  * SYSCLK = 16MHz
- * TIM2CLK = 16MHz / 16 = 1MHz
+ * TIM2CLK = 16MHz / 1600 = 10kHz
  */
 extern void 
 timer_init(void) 
 {
     RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 
-    TIM2->PSC = 0x000F;             /* 16 prescalar */
+    TIM2->PSC = 0x063F;             /* 1600 prescalar, 100ms tick */
     TIM2->ARR = 0x03E8;             /* count to 1000 */
     TIM2->DIER |= TIM_DIER_UIE;     /* enable update interrupt */
     TIM2->CR1 |= TIM_CR1_ARPE       /* autoreload on */
@@ -35,7 +35,7 @@ timer_init(void)
 extern uint32_t 
 timer_get(void)
 {
-    return (ms_count * 1000UL) + TIM2->CNT;
+    return count;
 }
 
 extern void 
@@ -58,7 +58,7 @@ void TIM2_IRQHandler(void)
     sr = TIM2->SR;
 
     if (sr & TIM_SR_UIF) {
-        ms_count++;
+        count++;
     }
     TIM2->SR &= ~TIM_SR_UIF;
 }
