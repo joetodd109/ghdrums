@@ -43,16 +43,16 @@ int main(void) {
     n = 0;
 
     light = true;
-    iox_led_on(false, false, false, light);
+    iox_led_on(false, light, false, false);
 
     while (1) {
 #ifdef TESTING
-        timer_delay(1000000UL); // wait 1s
+        timer_delay(10); // wait 1s
         midi_on(1, n, 90);
         light = !light;
         n > 127 ? n = 0 : n;
         iox_led_on(true, light, false, false);
-        timer_delay(500000UL); // wait 0.5s
+        timer_delay(5); // wait 0.5s
         midi_off(1, n++, 90);
 #endif
 #ifdef GHDRUMS
