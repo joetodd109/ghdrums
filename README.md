@@ -1,7 +1,7 @@
 Guitar Hero Drums MIDI Interceptor
 ==================================
 
-This project is for using the Guitar Hero Drum Kit as a MIDI controller. As the kit is only set up to send MIDI ON commands, the idea is to intercept these and send the corresponding OFF commands a short while after. 
+This project is for using the Guitar Hero Drum Kit as a MIDI controller. As the kit only sends MIDI ON commands, the idea is to intercept these and send the corresponding OFF commands a short while after. The MIDI output is then easier to work with in a DAW.
 
 Hardware
 --------
