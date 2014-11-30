@@ -46,6 +46,7 @@ timer_delay(uint32_t time) {
 
     start = timer_get();
     end = start + time;
+    timer = start;
 
     while (timer < end) {
         timer = timer_get();

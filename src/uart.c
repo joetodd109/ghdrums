@@ -12,6 +12,7 @@
 /* Includes -------------------------------------------------------------------*/
 #include "uart.h"
 #include "utl.h"
+#include "iox.h"
 
 #define USART2_TX_PIN   2   /* PA2 */
 #define USART1_RX_PIN   7   /* PB7 */
@@ -48,7 +49,7 @@ uart_init(uint32_t baudrate, uart_recv_callback_fn callback_fn)
     iox_alternate_func(iox_port_b, USART1_RX_PIN, USART_AF);
 
     /* Configure USART Tx/Rx as alternate function  */
-    iox_configure_pin(iox_port_b, USART2_TX_PIN, iox_mode_af, iox_type_pp, 
+    iox_configure_pin(iox_port_a, USART2_TX_PIN, iox_mode_af, iox_type_pp, 
                         iox_speed_fast, iox_pupd_up);
     iox_configure_pin(iox_port_b, USART1_RX_PIN, iox_mode_af, iox_type_pp,
                         iox_speed_fast, iox_pupd_up);
