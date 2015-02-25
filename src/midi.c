@@ -18,7 +18,7 @@
 /* Private variables ----------------------------------------------------------*/
 
 
-/* Function Declarations ------------------------------------------------------*/
+/* Function Definitions -------------------------------------------------------*/
 
 extern bool
 midi_on(uint8_t ch, uint8_t note, uint8_t velocity)

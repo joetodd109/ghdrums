@@ -25,7 +25,7 @@
 static uint32_t uart_recv_cnt;
 static uart_recv_callback_fn callback;
 
-/* Function Declarations ------------------------------------------------------*/
+/* Function Definitions -------------------------------------------------------*/
 extern void 
 uart_init(uint32_t baudrate, uart_recv_callback_fn callback_fn)
 {
