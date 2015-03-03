@@ -12,4 +12,4 @@ Hardware
 - 7404 Hex Inverter
 - 270ohm, 3x220ohm resistors
 
-
+![alt tag](https://raw.github.com/joetodd109/ghdrums/master/img/midi.png)
