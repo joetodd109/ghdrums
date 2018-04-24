@@ -5,7 +5,7 @@
 #include "iox.h"
 #include "uart.h"
 #include "timer.h"
-#include "midi.h"    
+#include "midi.h"
 
 //#define TESTING
 #define GHDRUMS
@@ -56,14 +56,14 @@ int main(void) {
         midi_off(1, n++, 90);
 #endif
 #ifdef GHDRUMS
-        /* 
-         * If full command received, send ON data and 
+        /*
+         * If full command received, send ON data and
          * store timer.
          */
         if (n >= 3) {
             if (!buffer_empty()) {
-                midi_on(0, 
-                        data[(tail + 1)], 
+                midi_on(0,
+                        data[(tail + 1)],
                         data[(tail + 2)]);
                 timer[headt++] = timer_get() + 5;
                 headt %= TBUF_SIZE;
@@ -73,13 +73,13 @@ int main(void) {
             }
         }
         /*
-         * If time has passed, send OFF command. 
+         * If time has passed, send OFF command.
          */
         if (!tbuffer_empty()) {
             if (timer[tailt] > timer_get()) {
                 if (!buffer_empty()) {
-                    midi_off(0, 
-                            data[(tail + 1)], 
+                    midi_off(0,
+                            data[(tail + 1)],
                             data[(tail + 2)]);
                     tail = (tail + MIDI_CMD_LEN) % BUF_SIZE;
                     tailt = (tailt + 1) % TBUF_SIZE;
@@ -91,7 +91,7 @@ int main(void) {
     return 0;
 }
 
-static bool 
+static bool
 buffer_empty(void)
 {
     return (head == tail);
